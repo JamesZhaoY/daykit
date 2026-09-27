@@ -1,0 +1,47 @@
+@layer curl {
+  .curl-panel { margin-top: 20px; padding: 25px 26px; border: 1px solid var(--line); border-radius: 8px; background: white; min-width: 0; }
+  .curl-heading, .curl-actions, .curl-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .curl-heading h2 { margin-top: 6px; font-size: 18px; font-weight: 500; color: #42523a; }
+  .curl-overline { color: #819071; font-size: 10px; letter-spacing: .1em; }
+  .curl-label { display: block; margin: 20px 0 8px; font-size: 12px; color: #59684c; }
+  .curl-label span { color: #929c89; margin-left: 8px; font: 10px var(--mono); }
+  #curl-input, #curl-code { display: block; width: 100%; min-height: 210px; border: 1px solid #e3e8dd; border-radius: 6px; background: #fdfefb; padding: 16px; resize: vertical; font: 12px/1.8 var(--mono); color: #4c5d42; overflow-wrap: anywhere; }
+  #curl-input:focus, #curl-code:focus { outline: 2px solid #b7c9a6; outline-offset: -1px; }
+  #curl-input[aria-invalid="true"] { border-color: #bf7764; }
+  #curl-code { min-height: 335px; }
+  .curl-hint { font-size: 11px; line-height: 1.9; color: #89957e; margin-top: 10px; }
+  .curl-action-bar { justify-content: flex-start; margin-top: 18px; }
+  .curl-action-bar .shortcut-note { margin-left: auto; }
+  #curl-feedback { margin-top: 12px; }
+  #curl-feedback.error { color: #a35545; }
+  .curl-empty { margin-top: 18px; padding: 36px 20px; border: 1px dashed #dbe3d0; border-radius: 6px; color: #89957e; font-size: 12px; text-align: center; }
+  .curl-method { background: #edf3e7; color: #4d7441; border-radius: 4px; padding: 4px 10px; font: 12px var(--mono); overflow-wrap: anywhere; max-width: 100%; }
+  .curl-url { margin-top: 17px; padding: 12px; border-radius: 5px; background: #f7f9f4; color: #4c5d42; font: 12px/1.8 var(--mono); overflow-wrap: anywhere; }
+  .curl-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 22px; }
+  .curl-detail-grid h3 { margin: 0 0 10px; font-size: 12px; font-weight: 500; color: #687b58; }
+  .curl-detail-grid h3 span { color: #9aa88d; font: 10px var(--mono); margin-left: 5px; }
+  .curl-table { border: 1px solid #e7ebe2; border-radius: 5px; overflow: hidden; }
+  .curl-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); border-top: 1px solid #edf0e9; }
+  .curl-row:first-child { border-top: 0; }
+  .curl-row code { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; padding: 9px 10px; font: 11px/1.7 var(--mono); }
+  .curl-row code:first-child { background: #f8faf5; color: #718365; }
+  .curl-body { margin-top: 22px; font-size: 12px; color: #687b58; }
+  .curl-body summary, .curl-supported summary { cursor: pointer; }
+  #curl-body { margin: 12px 0 0; padding: 14px; max-height: 360px; overflow: auto; background: #f7f9f4; border-radius: 5px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.8 var(--mono); }
+  .curl-warnings { margin-top: 22px; padding: 14px 16px; border-radius: 5px; background: #f9f6ed; color: #8b774b; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }
+  .curl-warnings strong { font-weight: 500; }
+  .curl-warnings ul { margin: 7px 0 0; padding-left: 17px; }
+  .curl-warnings li + li { margin-top: 5px; }
+  #curl-language { padding: 8px 10px; border: 1px solid #dfe4d7; border-radius: 5px; font-size: 12px; background: #fdfefb; max-width: 100%; }
+  .curl-supported { margin-top: 24px; color: #7d8973; font-size: 12px; line-height: 1.9; }
+  .curl-supported p { margin-top: 10px; }
+  .curl-supported a { display: inline-block; margin-top: 10px; text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 700px) {
+    .curl-panel { padding: 20px 16px; }
+    .curl-heading { align-items: flex-start; flex-wrap: wrap; }
+    .curl-detail-grid { grid-template-columns: 1fr; }
+    .curl-action-bar { align-items: stretch; flex-direction: column; }
+    .curl-action-bar .shortcut-note { margin-left: 0; }
+    #curl-input, #curl-code { padding: 12px; }
+  }
+}

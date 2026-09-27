@@ -1,0 +1,17 @@
+.DS_Store
+.playwright-cli/
+artifacts/
+node_modules/
+dist/
+.wrangler/
+.dev.vars*
+.env*
+*.log
+coverage/
+test-results/
+playwright-report/
+*.pem
+*.key
+*.p12
+.vscode/
+.idea/

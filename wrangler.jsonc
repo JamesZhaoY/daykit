@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "daykit",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-09-24",
+  "workers_dev": true,
+  "send_metrics": false,
+  "minify": true,
+  "build": {
+    "command": "npm run build",
+    "watch_dir": ["public", "scripts", "worker"]
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

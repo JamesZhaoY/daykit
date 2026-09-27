@@ -1,0 +1,8 @@
+@layer components {
+  .mail-render-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .mail-render-toolbar > span { color: #879578; font-size: 10px; }
+  .mail-view-switch { display: inline-flex; padding: 3px; gap: 3px; border: 1px solid #e2e8da; border-radius: 6px; background: #f4f7ef; }
+  .mail-view-switch button { padding: 6px 12px; font-size: 11px; color: #829173; border-radius: 4px; }
+  .mail-view-switch button[aria-pressed="true"] { background: white; color: #49633e; box-shadow: 0 1px 3px #354c2512; }
+  .mail-html-body { display: block; width: 100%; min-width: 0; height: 460px; max-height: 70vh; min-height: 300px; resize: vertical; border: 1px solid #e6eadf; border-radius: 5px; background: white; }
+}

@@ -1,0 +1,49 @@
+@layer components {
+  .jwt-form { margin-top: 25px; padding: 24px 26px; background: white; border: 1px solid var(--line); border-radius: 8px; }
+  .jwt-section-label { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 19px; font-size: 11px; color: #728066; }
+  .jwt-badge { padding: 3px 8px; font-size: 10px; border-radius: 4px; background: #edf2e7; color: #697d58; }
+  #jwt-input { width: 100%; min-height: 135px; padding: 15px; border: 1px solid #dfe5d6; background: #fcfdf9; border-radius: 5px; resize: vertical; font: 12px/1.9 var(--mono); overflow-wrap: anywhere; }
+  .jwt-hint { margin-top: 8px; font-size: 11px; color: #7b8970; }
+  .jwt-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 19px; }
+  .jwt-actions .shortcut-note { margin-left: auto; }
+  .jwt-notice { display: flex; gap: 11px; align-items: flex-start; padding: 15px 18px; border: 1px solid #e8dec5; border-radius: 7px; background: #faf7ee; color: #8a7644; margin-top: 17px; }
+  .jwt-notice strong { font-size: 12px; font-weight: 600; }
+  .jwt-notice p { font-size: 11px; margin-top: 3px; }
+  .jwt-summary { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px; margin-block: 22px; }
+  .jwt-summary > div { min-width: 0; border-bottom: 1px solid #e6eadd; padding-bottom: 15px; }
+  .jwt-summary span { display: block; font-size: 10px; color: #8a957e; }
+  .jwt-summary strong { display: block; font-size: 15px; font-weight: 550; margin-top: 7px; overflow-wrap: anywhere; color: #5c724b; }
+  .jwt-json-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 17px; }
+  .jwt-json-panel { min-width: 0; border: 1px solid var(--line); background: #fff; border-radius: 8px; overflow: hidden; }
+  .jwt-panel-heading { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .jwt-panel-heading label { font: 12px var(--mono); color: #5d7150; }
+  .jwt-panel-heading label span { font: 10px sans-serif; color: #8d9981; margin-left: 9px; }
+  .jwt-json-panel textarea { display: block; width: 100%; min-height: 290px; resize: vertical; border: 0; background: #fcfdf9; padding: 18px; font: 12px/1.85 var(--mono); color: #5c6c50; outline-offset: -3px; }
+  .jwt-times-heading { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; margin-top: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .jwt-times-heading h2, .jwt-claims h2 { font-size: 15px; }
+  .jwt-times-heading > span { font-size: 10px; color: #8b977f; }
+  .jwt-time-row { display: grid; grid-template-columns: 170px 1fr; gap: 16px; border-bottom: 1px solid var(--line); padding-block: 15px; }
+  .jwt-time-row code { display: block; font: 12px var(--mono); color: #5b744c; }
+  .jwt-time-row span { display: block; font-size: 10px; color: #869479; margin-top: 5px; overflow-wrap: anywhere; }
+  .jwt-time-row strong { font-size: 12px; font-weight: 500; }
+  .jwt-time-empty { color: #88987a; padding-block: 20px; font-size: 12px; }
+  .jwt-claims { margin-top: 27px; }
+  .jwt-claims dl { margin: 14px 0 0; }
+  .jwt-claims dl > div { display: grid; grid-template-columns: 170px 1fr; gap: 16px; padding-block: 12px; border-bottom: 1px solid var(--line); font-size: 11px; }
+  .jwt-claims dt { color: #829074; }
+  .jwt-claims dd { margin: 0; overflow-wrap: anywhere; font-family: var(--mono); }
+  .jwt-warnings { margin: 20px 0 0; padding-left: 18px; color: #977a44; font-size: 11px; line-height: 1.9; }
+}
+@layer responsive {
+  @media(max-width:700px) {
+    .jwt-form { padding: 20px 16px; }
+    #jwt-input { min-height: 170px; }
+    .jwt-summary { grid-template-columns: 1fr; gap: 12px; }
+    .jwt-summary > div { display: flex; justify-content: space-between; gap: 15px; align-items: baseline; padding-bottom: 10px; }
+    .jwt-summary strong { font-size: 13px; }
+    .jwt-json-grid { grid-template-columns: 1fr; }
+    .jwt-json-panel textarea { min-height: 190px; }
+    .jwt-times-heading { flex-wrap: wrap; gap: 5px; }
+    .jwt-time-row, .jwt-claims dl > div { grid-template-columns: 1fr; gap: 8px; }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "name": "daykit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "wrangler dev --local --ip 127.0.0.1 --port 8787",
+    "dev:static": "python3 -m http.server 4173 --bind 127.0.0.1 --directory public",
+    "start": "npm run dev",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/core.test.mjs tests/mail.test.mjs tests/mail-html.test.mjs tests/network.test.mjs tests/diff.test.mjs tests/regex.test.mjs tests/jwt.test.mjs tests/config.test.mjs tests/cron.test.mjs tests/curl.test.mjs",
+    "test:workers": "node --test tests/workers.test.mjs",
+    "check:deploy": "npm test && wrangler deploy --dry-run",
+    "deploy": "npm test && wrangler deploy",
+    "test:python": "node --test tests/curl-python.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "wrangler": "4.138.0"
+  },
+  "dependencies": {
+    "cron-parser": "5.10.1",
+    "cronstrue": "3.27.0",
+    "html-to-text": "10.0.1",
+    "imapflow": "2.0.6",
+    "postal-mime": "3.0.0",
+    "sanitize-html": "2.17.7",
+    "smol-toml": "1.9.0",
+    "yaml": "2.9.1"
+  },
+  "description": "日用 Daykit：12 个开发与日常工具，支持 Cloudflare Workers 一键部署。",
+  "license": "MIT",
+  "author": "JamesZhaoY",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JamesZhaoY/daykit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JamesZhaoY/daykit/issues"
+  },
+  "homepage": "https://github.com/JamesZhaoY/daykit#readme",
+  "keywords": [
+    "developer-tools",
+    "cloudflare-workers",
+    "json",
+    "jwt",
+    "cron",
+    "curl",
+    "toolbox"
+  ]
+}

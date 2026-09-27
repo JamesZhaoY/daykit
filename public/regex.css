@@ -1,0 +1,74 @@
+@layer components {
+  .regex-form { margin-top: 25px; padding: 23px 26px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+  .regex-section-label, .regex-input-footer, .regex-results-heading, .regex-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .regex-section-label { padding-bottom: 19px; color: #727e67; font-size: 11px; }
+  .regex-badge { flex-shrink: 0; padding: 3px 8px; border-radius: 4px; color: #6c7b5b; background: #edf2e7; font-size: 10px; }
+  .regex-settings { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 15px; }
+  .regex-label { display: flex; flex-direction: column; gap: 8px; min-width: 0; color: #526249; font-size: 12px; font-weight: 500; }
+  .regex-label > span { color: #87927b; font: 9px var(--mono); letter-spacing: .5px; }
+  .regex-label .field-input { min-height: 43px; }
+  .regex-flags-input { text-transform: lowercase; }
+  .regex-hint { margin-top: 10px; color: #87927b; font-size: 11px; line-height: 1.8; }
+  .regex-hint code { color: #687958; font: 11px var(--mono); }
+  .regex-flag { display: inline-grid; place-items: center; min-width: 22px; min-height: 23px; margin-inline: 2px; padding: 0 4px; border: 1px solid #dfe7d8; border-radius: 4px; color: #6d8059; background: #f6f9f2; vertical-align: middle; }
+  .regex-flag[aria-pressed="true"], .regex-flag:hover, .regex-flag:focus-visible { border-color: #a7b99b; background: #e9f0e2; }
+  .regex-text-label { margin-top: 19px; }
+  #regex-text { width: 100%; min-height: 185px; resize: vertical; padding: 15px; border: 1px solid #dfe4d7; border-radius: 5px; color: #59664d; background: #fdfefb; font: 12px/1.8 var(--mono); outline-offset: -2px; overflow-wrap: anywhere; }
+  #regex-text::placeholder { color: #a1a795; }
+  .regex-input-footer { min-height: 32px; color: #88957b; font: 10px var(--mono); }
+  .regex-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 10px; }
+  .regex-shortcut { margin-left: auto; color: #9ba18e; font-size: 10px; }
+  .regex-results { margin-top: 28px; }
+  .regex-results-heading { margin-bottom: 15px; }
+  .regex-results-heading h2 { font-size: 16px; }
+  #regex-result-meta { color: #7f8a73; font-size: 11px; text-align: right; }
+  #regex-feedback { min-height: 0; margin-bottom: 12px; color: #62844c; font-size: 12px; overflow-wrap: anywhere; }
+  #regex-feedback.error { padding: 13px 16px; border-radius: 6px; color: #a35545; background: #fbefeb; }
+  .regex-summary { display: flex; flex-wrap: wrap; gap: 9px 24px; margin-bottom: 16px; padding: 13px 16px; border: 1px solid #e2e9d8; border-radius: 6px; color: #78866b; background: #f1f5eb; font-size: 11px; }
+  .regex-summary strong { color: #526a42; font-weight: 600; }
+  .regex-highlight-panel, .regex-match-list { border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
+  .regex-match-list { margin-top: 17px; }
+  .regex-panel-heading { min-height: 50px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .regex-panel-heading h3 { color: #627154; font-size: 12px; font-weight: 500; }
+  .regex-panel-heading > span { color: #a2aa96; font: 9px var(--mono); letter-spacing: .7px; }
+  .regex-highlight { min-height: 100px; max-height: 370px; margin: 0; padding: 18px 17px; color: #5e6a52; background: #f8faf4; font: 12px/1.85 var(--mono); white-space: pre-wrap; overflow: auto; overflow-wrap: anywhere; }
+  .regex-highlight mark { padding: 1px 3px; border-radius: 3px; color: #405634; background: #dbe9c9; box-shadow: 0 0 0 1px #c6dcb1; }
+  .regex-highlight .regex-empty-match { color: #6e8258; background: #edf3e7; box-shadow: none; }
+  .regex-highlight-empty, .regex-empty { color: #9aa48f; }
+  .regex-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; gap: 7px; padding: 20px; text-align: center; }
+  .regex-empty strong { color: #748364; font-size: 12px; font-weight: 500; }
+  .regex-empty p { color: #9aa48f; font-size: 11px; }
+  .regex-match { border-bottom: 1px solid #edf0e8; }
+  .regex-match:last-child { border-bottom: 0; }
+  .regex-match-heading { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 13px 16px; }
+  .regex-match-number { width: 23px; color: #91a17f; font: 10px var(--mono); flex-shrink: 0; }
+  .regex-match-value { min-width: 0; flex: 1; color: #536447; font: 12px/1.7 var(--mono); overflow-wrap: anywhere; white-space: pre-wrap; }
+  .regex-match-index { flex-shrink: 0; color: #929d86; font: 10px var(--mono); white-space: nowrap; }
+  .regex-match-groups { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 8px 12px; padding: 11px 16px 15px 50px; background: #fcfdf9; }
+  .regex-groups-title { grid-column: 1 / -1; color: #9aa48f; font-size: 10px; }
+  .regex-group { display: contents; }
+  .regex-group-label { color: #8d9b7e; font: 10px var(--mono); }
+  .regex-group code { min-width: 0; color: #677654; font: 11px/1.65 var(--mono); overflow-wrap: anywhere; white-space: pre-wrap; }
+  .regex-unmatched, .regex-empty-value { color: #abb3a4; font-style: normal; }
+  .regex-no-groups { grid-column: 1 / -1; color: #a2ab98; font-size: 10px; }
+  @media (max-width: 700px) {
+    .regex-form { padding: 20px 16px; }
+    .regex-section-label { flex-wrap: wrap; gap: 8px; padding-bottom: 17px; }
+    .regex-settings { grid-template-columns: 1fr; gap: 13px; }
+    .regex-label .field-input, #regex-text { font-size: 16px; }
+    .regex-hint { font-size: 10px; }
+    .regex-text-label { margin-top: 16px; }
+    .regex-actions { gap: 8px; }
+    .regex-shortcut { display: none; }
+    .regex-results-heading { align-items: flex-start; }
+    #regex-result-meta { font-size: 10px; }
+    .regex-summary { gap: 8px 14px; }
+    .regex-panel-heading { padding-inline: 13px; }
+    .regex-highlight { padding: 15px 13px; font-size: 11px; }
+    .regex-match-heading { flex-wrap: wrap; gap: 8px; padding: 12px 13px; }
+    .regex-match-value { flex-basis: calc(100% - 60px); }
+    .regex-match-index { margin-left: 34px; }
+    .regex-match-heading .icon-button { margin-left: auto; }
+    .regex-match-groups { grid-template-columns: 68px minmax(0, 1fr); padding: 10px 13px 13px 47px; }
+  }
+}

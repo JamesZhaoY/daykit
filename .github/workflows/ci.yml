@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Test and validate production deployment
+        run: npm run check:deploy
+      - name: Verify generated Python requests code
+        run: npm run test:python
+      - name: Check routes and headers in the Workers runtime
+        shell: bash
+        run: |
+          npm run dev > "$RUNNER_TEMP/daykit-dev.log" 2>&1 &
+          daykit_pid=$!
+          trap 'kill "$daykit_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8787/ -o /dev/null; then
+              npm run test:workers
+              exit $?
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/daykit-dev.log"
+          exit 1

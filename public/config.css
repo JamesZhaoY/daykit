@@ -1,0 +1,37 @@
+@layer components {
+  .config-form { margin-top: 26px; }
+  .config-controls { display: flex; align-items: end; gap: 14px; margin-bottom: 18px; }
+  .config-controls label { display: flex; flex-direction: column; gap: 7px; color: #65705d; font-size: 12px; }
+  .config-controls select { width: 150px; min-height: 40px; padding: 8px 12px; border: 1px solid #dce3d5; border-radius: 5px; background: #fff; font: 12px var(--mono); }
+  .config-swap { min-height: 40px; }
+  .config-local { margin-left: auto; padding-bottom: 10px; color: #839075; font-size: 11px; }
+  .config-editors { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: #fff; }
+  .config-panel { min-width: 0; }
+  .config-panel + .config-panel { border-left: 1px solid var(--line); }
+  .config-panel-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 7px; padding: 13px 17px; border-bottom: 1px solid var(--line); background: #f7f9f3; }
+  .config-panel-heading label { color: #526249; font-size: 12px; font-weight: 500; }
+  .config-panel-heading span { color: #89967b; font: 10px var(--mono); }
+  .config-panel textarea { display: block; width: 100%; min-height: 350px; margin: 0; padding: 18px; resize: vertical; border: 0; border-radius: 0; outline-offset: -3px; background: #fff; color: #42523a; font: 12px/1.9 var(--mono); tab-size: 2; }
+  #config-output { background: #fcfdf9; }
+  .config-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+  .config-result-actions { display: flex; gap: 9px; margin-left: auto; }
+  .config-feedback { margin-top: 15px; color: #7b896d; font-size: 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .config-feedback.error { padding: 12px 15px; border-radius: 5px; color: #a25442; background: #fbefeb; }
+  .config-notes { display: grid; gap: 6px; margin-top: 28px; padding-top: 19px; border-top: 1px solid var(--line); color: #859177; font-size: 11px; line-height: 1.9; }
+  .config-notes strong { color: #687b5b; font-size: 12px; font-weight: 500; }
+}
+
+@layer responsive {
+  @media (max-width: 900px) { .config-local { display: none; } .config-panel textarea { min-height: 310px; } }
+  @media (max-width: 600px) {
+    .config-controls { gap: 7px; }
+    .config-controls label { flex: 1; min-width: 0; }
+    .config-controls select { width: 100%; }
+    .config-swap { gap: 4px; padding-inline: 4px; font-size: 11px; }
+    .config-editors { grid-template-columns: minmax(0, 1fr); }
+    .config-panel + .config-panel { border-left: 0; border-top: 1px solid var(--line); }
+    .config-panel textarea { min-height: 240px; padding: 14px; }
+    .config-result-actions { width: 100%; margin: 0; padding-top: 3px; }
+    .config-result-actions button { flex: 1; }
+  }
+}
