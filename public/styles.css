@@ -56,6 +56,11 @@
 }
 
 @layer components {
+  .pages-notice { margin: 10px 0 25px; padding: 18px 22px; border: 1px solid #dfe6d6; border-radius: 7px; background: #f1f5eb; color: #62764f; }
+  .pages-notice strong { font-size: 13px; font-weight: 550; }
+  .pages-notice p { font-size: 12px; line-height: 1.9; margin-top: 5px; }
+  .pages-notice p a { text-decoration: underline; text-underline-offset: 3px; margin-inline: 3px; }
+  .pages-notice .button { margin-top: 16px; }
   .blue { background: #e8eff7; color: #52749b; }
   .mail-card { grid-column: 1 / -1; }
   body[data-page="outlook"] main { padding-top: 30px; }

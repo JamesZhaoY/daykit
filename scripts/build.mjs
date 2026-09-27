@@ -5,8 +5,16 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
-await rm('dist', { recursive: true, force: true });
-await cp('public', 'dist', {
+const pages = process.argv.includes('--pages');
+const outputDirectory = pages ? 'dist-pages' : 'dist';
+const requestedBase = process.argv.find(arg => arg.startsWith('--base='))?.slice(7) ?? process.env.DAYKIT_BASE_PATH ?? '/';
+const basePath = requestedBase === '' || requestedBase === '/' ? '/' : `${requestedBase.replace(/\/$/, '')}/`;
+if (!/^\/(?:[A-Za-z0-9._~-]+\/)*$/.test(basePath) || basePath.split('/').some(part => part === '.' || part === '..')) {
+  throw new Error('Base path must be a site path such as /daykit/ or /.');
+}
+if (!pages && basePath !== '/') throw new Error('Use --pages when building for a site subdirectory.');
+await rm(outputDirectory, { recursive: true, force: true });
+await cp('public', outputDirectory, {
   recursive: true,
   filter: source => !['.js', '.mjs', '.css'].includes(extname(source)),
 });
@@ -14,7 +22,7 @@ await cp('public', 'dist', {
 // Give the browser worker a versioned URL before bundling its UI entry point.
 const workerResult = await build({
   entryPoints: ['public/regex-worker.js', 'public/cron-core.mjs'],
-  outdir: 'dist/assets',
+  outdir: `${outputDirectory}/assets`,
   entryNames: '[name]-[hash]',
   bundle: true,
   minify: true,
@@ -25,20 +33,25 @@ const workerResult = await build({
   metafile: true,
 });
 const workerOutput = Object.keys(workerResult.metafile.outputs).find(path => path.includes('regex-worker-'));
-const workerURL = `/${relative('dist', workerOutput).replaceAll('\\', '/')}`;
+const workerURL = `${basePath}${relative(outputDirectory, workerOutput).replaceAll('\\', '/')}`;
 const cronOutput = Object.keys(workerResult.metafile.outputs).find(path => path.includes('cron-core-'));
-const cronWorkerURL = `/${relative('dist', cronOutput).replaceAll('\\', '/')}`;
+const cronWorkerURL = `${basePath}${relative(outputDirectory, cronOutput).replaceAll('\\', '/')}`;
 
 const result = await build({
   entryPoints: ['public/app.js', 'public/styles.css', 'public/network.css', 'public/mail-preview.css', 'public/diff.css', 'public/regex.css', 'public/jwt.css', 'public/config.css', 'public/cron.css', 'public/curl.css'],
-  outdir: 'dist/assets',
+  outdir: `${outputDirectory}/assets`,
   entryNames: '[name]-[hash]',
   chunkNames: 'chunk-[hash]',
   splitting: true,
   bundle: true,
   minify: true,
   format: 'esm',
-  define: { __REGEX_WORKER_URL__: JSON.stringify(workerURL), __CRON_WORKER_URL__: JSON.stringify(cronWorkerURL) },
+  define: {
+    __REGEX_WORKER_URL__: JSON.stringify(workerURL),
+    __CRON_WORKER_URL__: JSON.stringify(cronWorkerURL),
+    __BASE_PATH__: JSON.stringify(basePath),
+    __STATIC_ONLY__: String(pages),
+  },
   target: 'es2022',
   charset: 'utf8',
   legalComments: 'none',
@@ -50,17 +63,28 @@ const replacements = Object.entries(result.metafile.outputs)
   .filter(([, info]) => info.entryPoint)
   .map(([output, info]) => [
     `/${relative('public', info.entryPoint).replaceAll('\\', '/')}`,
-    `/${relative('dist', output).replaceAll('\\', '/')}`,
+    `/${relative(outputDirectory, output).replaceAll('\\', '/')}`,
   ]);
-for (const path of await readdir('dist', { recursive: true })) {
+for (const path of await readdir(outputDirectory, { recursive: true })) {
   if (!path.endsWith('.html')) continue;
-  let html = await readFile(`dist/${path}`, 'utf8');
+  let html = await readFile(`${outputDirectory}/${path}`, 'utf8');
   for (const [source, output] of replacements) html = html.replaceAll(`"${source}"`, `"${output}"`);
-  await writeFile(`dist/${path}`, html);
+  if (pages) {
+    html = html.replace(/\b(href|src)="\/(?!\/)([^"\n]*)"/g, (_match, attribute, value) => `${attribute}="${basePath}${value}"`);
+    html = html.replace('<head>', `<head>\n  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">\n  <meta name="referrer" content="no-referrer">`);
+    html = html.replace('<title>', '<title>[静态版] ');
+    if (path === 'index.html') html = html.replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="日用 Daykit 静态版：JSON、时间戳、编码、Diff、正则、JWT、配置转换、Cron、cURL，9 个浏览器本地工具。">');
+  }
+  await writeFile(`${outputDirectory}/${path}`, html);
+}
+
+if (pages) {
+  await rm(`${outputDirectory}/_headers`, { force: true });
+  await writeFile(`${outputDirectory}/.nojekyll`, '');
 }
 
 for (const output of [...Object.keys(workerResult.metafile.outputs), ...Object.keys(result.metafile.outputs)]) {
   const content = await readFile(output);
   console.log(`${output}: ${(content.length / 1024).toFixed(1)} KiB, gzip ${(gzipSync(content).length / 1024).toFixed(1)} KiB`);
 }
-console.log('Workers static assets are ready in dist/.');
+console.log(`${pages ? 'GitHub Pages static site' : 'Workers static assets'} ready in ${outputDirectory}/ (base: ${basePath}).`);

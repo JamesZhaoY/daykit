@@ -11,8 +11,10 @@
     "dev:static": "python3 -m http.server 4173 --bind 127.0.0.1 --directory public",
     "start": "npm run dev",
     "build": "node scripts/build.mjs",
+    "build:pages": "node scripts/build.mjs --pages",
     "test": "node --test tests/core.test.mjs tests/mail.test.mjs tests/mail-html.test.mjs tests/network.test.mjs tests/diff.test.mjs tests/regex.test.mjs tests/jwt.test.mjs tests/config.test.mjs tests/cron.test.mjs tests/curl.test.mjs",
     "test:workers": "node --test tests/workers.test.mjs",
+    "test:pages": "npm run build:pages -- --base=/daykit/ && node --test tests/pages.test.mjs",
     "check:deploy": "npm test && wrangler deploy --dry-run",
     "deploy": "npm test && wrangler deploy",
     "test:python": "node --test tests/curl-python.test.mjs"

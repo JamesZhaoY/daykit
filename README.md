@@ -1,14 +1,19 @@
 # 日用 Daykit
 
-一个可以部署到自己 Cloudflare 账号的个人工具网站。**12 个工具、独立网址、浏览器本地处理优先。**
+一个可以部署到自己账号的个人工具网站。**Cloudflare Workers 完整版提供 12 个工具，GitHub Pages 静态版提供 9 个本地工具；每个工具都有独立网址。**
 
-A self-hostable developer toolbox on Cloudflare Workers. Most tools run entirely in your browser.
+A self-hostable developer toolbox for Cloudflare Workers (12 tools) or GitHub Pages (9 browser-only tools).
 
 [![CI](https://github.com/JamesZhaoY/daykit/actions/workflows/ci.yml/badge.svg)](https://github.com/JamesZhaoY/daykit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/JamesZhaoY/daykit)
 
-[在线体验](https://daykit.22y.workers.dev) · [一键部署](#一键部署) · [手动部署](#手动部署) · [部署与费用详解](docs/DEPLOYMENT.md) · [功能边界](docs/TOOLS.md)
+[Workers 完整版](https://daykit.22y.workers.dev) · [Pages 静态版](https://jameszhaoy.github.io/daykit/) · [一键部署](#一键部署) · [手动部署](#手动部署) · [GitHub Pages 部署](#github-pages-部署) · [部署与费用详解](docs/DEPLOYMENT.md) · [功能边界](docs/TOOLS.md)
+
+| 部署方式 | 可用功能 | 所需账号 |
+| --- | --- | --- |
+| Cloudflare Workers + Static Assets | 全部 12 个工具，含邮件、IP 和域名查询 | Cloudflare；一键部署还需 GitHub |
+| GitHub Pages | JSON、时间戳、编码、Diff、正则、JWT、配置转换、Cron、cURL | GitHub，无需 Cloudflare |
 
 ## 功能清单
 
@@ -28,6 +33,8 @@ A self-hostable developer toolbox on Cloudflare Workers. Most tools run entirely
 | 域名 IP 查询 | A / AAAA / CNAME / MX / NS、CDN 线索与依据 | Worker + 公共 DNS | `/tools/domain/` |
 
 共用功能：分类与关键词搜索、收藏、最近使用、桌面 / 手机布局、独立页面直达，以及 `⌘ / Ctrl + K` 快速打开工具。
+
+GitHub Pages 不运行 Worker API，因此目录只展示 9 个本地工具。访问邮件、IP、域名工具的旧链接时会显示部署说明，不收集邮箱凭据或发起 API 请求。Pages 项目网址中的页面路径会自动加上 `/<仓库名>/` 前缀。
 
 ![Daykit 工具目录](docs/images/home.png)
 
@@ -73,6 +80,18 @@ npx wrangler login --device
 
 部署成功后可关闭电脑，网站运行在 Cloudflare 上。自定义域名、Git 自动部署、更新与回滚方法见 [部署指南](docs/DEPLOYMENT.md)。
 
+## GitHub Pages 部署
+
+只需 **GitHub 账号和公开仓库**，无需 Cloudflare 账号、API Token 或本地开发环境。
+
+1. Fork 本仓库，或点击 **Use this template → Create a new repository** 创建自己的公开仓库。Fork 后如 Actions 尚未启用，先到 **Actions** 页面启用工作流。
+2. 在自己的仓库打开 **Settings → Pages → Build and deployment**，将 **Source** 设为 **GitHub Actions**。
+3. 打开 **Actions → Deploy GitHub Pages → Run workflow**，选择 `main` 分支并运行。
+4. 等待 `build` 和 `deploy` 成功，在 **Settings → Pages** 查看访问地址，通常为 `https://<用户名>.github.io/<仓库名>/`。
+5. 如需每次推送 `main` 自动更新，在 **Settings → Secrets and variables → Actions → Variables** 新建仓库变量 `ENABLE_GITHUB_PAGES`，值为 `true`。未设置时仍可手动运行工作流。
+
+工作流会自动读取仓库子路径并构建 `dist-pages/`，收藏、深层链接和正则 / Cron 浏览器线程均支持该路径。自定义域名、手动构建和故障排查见 [GitHub Pages 详细指南](docs/DEPLOYMENT.md#方式四github-pages-静态版)。
+
 ## 是否免费
 
 **支持先使用 Workers 免费套餐。** 当前架构没有数据库、对象存储或商业 API Key 的必选费用。
@@ -90,6 +109,8 @@ npx wrangler login --device
 
 大邮件的 MIME 解析与 HTML 清理可能超过免费 CPU 上限。免费部署不等于所有邮件都能免费处理；使用量增加时应查看 Worker 的 CPU 和错误指标。第三方 IP / DNS / Microsoft 服务也有各自的额度与限流规则。
 
+**GitHub Pages 静态版可在 GitHub Free 的公开仓库使用**，不产生 Cloudflare 费用；受 GitHub Pages 的站点大小、带宽和使用规则限制。详见 [GitHub Pages 说明](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)与 [使用限制](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)。
+
 ## 本地开发
 
 ```sh
@@ -103,13 +124,15 @@ npm run dev
 | --- | --- |
 | `npm run dev` | 本地开发，修改后自动重新构建 |
 | `npm run build` | 生成压缩、带文件名指纹的 `dist/` |
+| `npm run build:pages -- --base=/daykit/` | 生成仓库子路径下的静态版 `dist-pages/`；替换为自己的仓库名 |
 | `npm test` | Node.js 核心测试，不需要 Cloudflare 登录或 Python |
+| `npm run test:pages` | 构建并检查 Pages 子路径、资源引用和浏览器线程地址 |
 | `npm run test:python` | 验证生成的 Python requests 代码，需要 Python 3；不需要安装 requests |
 | `npm run test:workers` | 检查已启动本地服务的路由、缓存头和 API 边界 |
 | `npm run check:deploy` | 核心测试 + 构建 + Wrangler dry-run，不上传 |
 | `npm run deploy` | 核心测试 + 构建 + 正式部署 |
 
-GitHub Actions 会执行核心测试、Python 代码验证、部署预检及本地 Workers 路由测试。浏览器检查的运行方式见 [功能与开发说明](docs/TOOLS.md#校验)。
+GitHub CI 会执行核心测试、Python 代码验证、部署预检、Pages 构建检查及本地 Workers 路由测试。Pages 发布使用独立工作流；浏览器检查的运行方式见 [功能与开发说明](docs/TOOLS.md#校验)。
 
 ## 数据处理与功能边界
 
@@ -131,11 +154,12 @@ worker/                  邮件 / IP / DNS API
 scripts/build.mjs        静态资源打包与浏览器线程构建
 tests/                   核心、Python、HTTP 与浏览器检查
 docs/                    部署指南与功能说明
-.github/workflows/ci.yml 自动检查
+.github/workflows/ci.yml     自动检查
+.github/workflows/pages.yml  GitHub Pages 构建与发布
 wrangler.jsonc           Workers 与静态资源配置
 ```
 
-前端使用原生 HTML / CSS / JavaScript；esbuild 负责打包。只有 `/api/*` 先进入 Worker，其余请求使用 Static Assets。正则和 Cron 在可终止的浏览器线程中计算。
+前端使用原生 HTML / CSS / JavaScript；esbuild 负责打包。Workers 版只有 `/api/*` 先进入 Worker，其余请求使用 Static Assets；Pages 版只发布静态资源。正则和 Cron 在可终止的浏览器线程中计算。
 
 ## 贡献与许可证
 

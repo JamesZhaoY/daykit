@@ -1,6 +1,10 @@
 import { formatJSON, encodeText, parseTimestamp, parseDatetime, datetimeValue, MAX_INPUT_BYTES } from './core.mjs';
 
-const tools = [
+const basePath = typeof __BASE_PATH__ === 'string' ? __BASE_PATH__ : '/';
+const staticOnly = typeof __STATIC_ONLY__ === 'boolean' ? __STATIC_ONLY__ : false;
+const sitePath = path => `${basePath}${path.replace(/^\/+/, '')}`;
+const onlineToolIds = new Set(['outlook', 'ip', 'domain']);
+const allTools = [
   { id: 'json', title: 'JSON 格式化', en: 'JSON FORMATTER', category: '开发', glyph: '{ }', color: 'sage', description: '让杂乱的数据，变得一目了然。', details: '格式化、压缩、校验，一次搞定。', tags: ['JSON', '格式校验'], keywords: 'json 格式化 压缩 校验 开发 数据' },
   { id: 'timestamp', title: '时间戳转换', en: 'TIMESTAMP CONVERTER', category: '时间', glyph: '◷', color: 'sand', description: '在一串数字和一个时刻之间，自由切换。', details: '秒 / 毫秒识别，支持本地时区与 UTC。', tags: ['Unix', '日期时间'], keywords: 'timestamp unix 时间戳 日期 秒 毫秒 时间' },
   { id: 'encode', title: '文本编码 / 解码', en: 'TEXT ENCODER', category: '文本', glyph: 'Aa', color: 'lavender', description: '换一种表达，内容原样抵达。', details: 'Base64 与 URL 编码，支持中文。', tags: ['Base64', 'URL'], keywords: 'encode decode base64 url 编码 解码 中文 文本' },
@@ -14,11 +18,13 @@ const tools = [
   { id: 'cron', title: 'Cron 表达式测试器', en: 'CRON EXPLORER', category: '时间', glyph: '◷', color: 'sand', description: '把定时规则，变成看得懂的时间。', details: '解释 Cron 表达式，按时区预览未来 10 次执行时间。', tags: ['Cron', '时区'], keywords: 'cron 定时 计划 时间 表达式 cloudflare utc 时区' },
   { id: 'curl', title: 'cURL 请求转换', en: 'CURL CONVERTER', category: '开发', glyph: '>_', color: 'lavender', description: '从请求命令，到可用的调用代码。', details: '解析 cURL 请求，生成 JavaScript fetch 与 Python requests 代码。', tags: ['cURL', 'fetch / Python'], keywords: 'curl fetch python requests 请求 转换 接口 headers' },
 ];
+const tools = staticOnly ? allTools.filter(tool => !onlineToolIds.has(tool.id)) : allTools;
 const page = document.body.dataset.page;
-const current = tools.find(tool => tool.id === page);
+const current = allTools.find(tool => tool.id === page);
+const unavailable = staticOnly && onlineToolIds.has(page);
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
-const toolUrl = id => `/tools/${id}/`;
+const toolUrl = id => sitePath(`tools/${id}/`);
 const escapeHTML = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const icon = (name, size = 20) => {
   const shapes = {
@@ -37,16 +43,16 @@ const icon = (name, size = 20) => {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shapes[name] || shapes.grid}</svg>`;
 };
 function readStore(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(`daykit.${key}`)) ?? fallback; } catch { return fallback; }
+  try { return JSON.parse(localStorage.getItem(`daykit.${basePath === '/' ? '' : basePath + '.'}${key}`)) ?? fallback; } catch { return fallback; }
 }
 function writeStore(key, value) {
-  try { localStorage.setItem(`daykit.${key}`, JSON.stringify(value)); } catch { /* Tools remain usable when storage is disabled. */ }
+  try { localStorage.setItem(`daykit.${basePath === '/' ? '' : basePath + '.'}${key}`, JSON.stringify(value)); } catch { /* Tools remain usable when storage is disabled. */ }
 }
 const savedFavorites = readStore('favorites', []);
 let favorites = Array.isArray(savedFavorites) ? savedFavorites.filter(id => tools.some(tool => tool.id === id)) : [];
 const savedRecent = readStore('recent', []);
 let recent = Array.isArray(savedRecent) ? savedRecent.filter(item => item && tools.some(tool => tool.id === item.id) && Number.isFinite(item.at)).slice(0, 3) : [];
-if (current) {
+if (current && !unavailable) {
   recent = [{ id: page, at: Date.now() }, ...recent.filter(item => item.id !== page)].slice(0, 3);
   writeStore('recent', recent);
 }
@@ -56,20 +62,20 @@ let query = '';
 const mark = '<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 const glyph = tool => `<span class="tool-glyph ${tool.color}" aria-hidden="true">${tool.glyph}</span>`;
 function navMarkup() {
-  return `<nav aria-label="主要导航"><a class="nav-link ${page === 'home' && !favoritesOnly ? 'active' : ''}" href="/" ${page === 'home' && !favoritesOnly ? 'aria-current="page"' : ''}>${icon('grid')}<span>全部工具</span><span class="nav-count">${String(tools.length).padStart(2, '0')}</span></a>
-  <a class="nav-link ${page === 'home' && favoritesOnly ? 'active' : ''}" href="/?view=favorites" ${page === 'home' && favoritesOnly ? 'aria-current="page"' : ''}>${icon('star')}<span>我的收藏</span><span class="nav-count favorite-count">${favorites.length}</span></a>
+  return `<nav aria-label="主要导航"><a class="nav-link ${page === 'home' && !favoritesOnly ? 'active' : ''}" href="${sitePath('')}" ${page === 'home' && !favoritesOnly ? 'aria-current="page"' : ''}>${icon('grid')}<span>全部工具</span><span class="nav-count">${String(tools.length).padStart(2, '0')}</span></a>
+  <a class="nav-link ${page === 'home' && favoritesOnly ? 'active' : ''}" href="${sitePath('?view=favorites')}" ${page === 'home' && favoritesOnly ? 'aria-current="page"' : ''}>${icon('star')}<span>我的收藏</span><span class="nav-count favorite-count">${favorites.length}</span></a>
   <p class="nav-label">工具箱 <span>TOOLBOX</span></p>
   ${tools.map(tool => `<a class="nav-link tool-nav ${tool.id === page ? 'active' : ''}" href="${toolUrl(tool.id)}" ${tool.id === page ? 'aria-current="page"' : ''}><span class="nav-glyph">${tool.glyph}</span><span>${tool.title}</span></a>`).join('')}</nav>`;
 }
 $('#app').innerHTML = `<a class="skip-link" href="#main">跳到主要内容</a>
-  <aside class="sidebar"><a class="brand" href="/" aria-label="日用 Daykit 首页">${mark}<span>日用<span class="brand-en">DAYKIT</span></span></a>
+  <aside class="sidebar"><a class="brand" href="${sitePath('')}" aria-label="日用 Daykit 首页">${mark}<span>日用<span class="brand-en">DAYKIT</span></span></a>
   <button class="sidebar-search" data-action="search">${icon('search', 17)}<span>找个工具</span><kbd>⌘ K</kbd></button>${navMarkup()}
   <div class="sidebar-bottom"><div class="local-note">${icon('shield', 19)}<div><strong>你的日常工具箱</strong><p>随用随开，操作清晰</p></div></div><div class="sidebar-signature"><span>日常所需，刚刚好。</span><span>v1.0</span></div></div></aside>
-  <div class="workspace"><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-menu" data-action="menu" aria-label="打开导航菜单">${icon('menu')}</button><span>我的工作台</span><span class="breadcrumb-slash">/</span><strong>${current?.title || (favoritesOnly ? '我的收藏' : '全部工具')}</strong></div><div class="topbar-right"><span class="local-status"><i></i> ${page === 'outlook' ? 'Worker 在线读取' : ['ip', 'domain'].includes(page) ? '在线查询' : page === 'home' ? '日常工具' : '本地运行'}</span><span class="avatar" aria-label="个人空间">D</span></div></header>
+  <div class="workspace"><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-menu" data-action="menu" aria-label="打开导航菜单">${icon('menu')}</button><span>我的工作台</span><span class="breadcrumb-slash">/</span><strong>${current?.title || (favoritesOnly ? '我的收藏' : '全部工具')}</strong></div><div class="topbar-right"><span class="local-status"><i></i> ${unavailable ? '需要服务端' : staticOnly ? '静态版 · 本地运行' : page === 'outlook' ? 'Worker 在线读取' : ['ip', 'domain'].includes(page) ? '在线查询' : page === 'home' ? '日常工具' : '本地运行'}</span><span class="avatar" aria-label="个人空间">D</span></div></header>
   <main id="main" tabindex="-1">${current ? toolPage() : homePage()}</main>
   <footer class="footer"><span>DAYKIT <span class="footer-dot">/</span> 让工具回归简单</span><span>${icon('shield', 13)} ${page === 'outlook' ? '仅用于本次读取，不持久保存' : '轻量工具，打开就用'}</span></footer></div>
   <dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">快速打开工具</h2><button class="icon-button" data-close="search-dialog" aria-label="关闭搜索">${icon('close')}</button></div><label class="dialog-search">${icon('search')}<input id="quick-search" type="search" placeholder="搜索工具名称或关键词…" autocomplete="off" aria-label="搜索工具"></label><div id="quick-results"></div><p class="dialog-hint">按 Esc 关闭 · 所有工具均可直接使用</p></dialog>
-  <dialog id="mobile-dialog" aria-label="网站导航"><div class="dialog-heading"><a class="brand" href="/">${mark}<span>日用</span></a><button class="icon-button" data-close="mobile-dialog" aria-label="关闭导航">${icon('close')}</button></div>${navMarkup()}</dialog>
+  <dialog id="mobile-dialog" aria-label="网站导航"><div class="dialog-heading"><a class="brand" href="${sitePath('')}">${mark}<span>日用</span></a><button class="icon-button" data-close="mobile-dialog" aria-label="关闭导航">${icon('close')}</button></div>${navMarkup()}</dialog>
   <div id="toast" role="status" aria-live="polite"></div>`;
 
 function favoriteButton(tool, extraClass = '') {
@@ -77,21 +83,23 @@ function favoriteButton(tool, extraClass = '') {
 }
 function homePage() {
   return `<section class="welcome"><div><div class="eyebrow"><span class="tiny-line"></span> YOUR EVERYDAY TOOLKIT</div><h1>${favoritesOnly ? '顺手的，都在这里。' : '小工具，让日常更从容。'}</h1><p>${favoritesOnly ? '把常用的工具，放在触手可及的地方。' : '少一点重复，多一点专注。你需要的小帮手，都在这里。'}</p></div><div class="welcome-note"><span class="note-plus">+</span><span>简单的工具<br>认真的日常</span><span class="note-index">EST. 2026</span></div></section>
+  ${staticOnly ? `<aside class="pages-notice"><strong>GitHub Pages 静态版 · 9 个本地工具</strong><p>邮件读取、IP 检测和域名查询需要服务端，可按<a href="https://github.com/JamesZhaoY/daykit/blob/main/docs/DEPLOYMENT.md">部署指南</a>使用 Cloudflare 完整版。</p></aside>` : ''}
   <section class="tool-directory" aria-label="工具目录"><div class="directory-top"><h2>${favoritesOnly ? '我的收藏' : '探索工具'} <span id="result-count">${favoritesOnly ? favorites.length : tools.length}</span></h2><label class="directory-search">${icon('search', 18)}<input id="tool-search" type="search" placeholder="搜索工具…" aria-label="搜索工具目录"><kbd>/</kbd></label></div>
-  <div class="directory-toolbar"><div class="filters" role="group" aria-label="按类别筛选">${['全部', '开发', '文本', '时间', '邮箱', '网络'].map((name, i) => `<button class="filter ${i === 0 ? 'selected' : ''}" data-category="${name}" aria-pressed="${i === 0}">${name === '全部' ? '全部工具' : name}</button>`).join('')}</div><span class="directory-meta">轻量 · 顺手 · 无需登录</span></div>
+  <div class="directory-toolbar"><div class="filters" role="group" aria-label="按类别筛选">${['全部', ...new Set(tools.map(tool => tool.category))].map((name, i) => `<button class="filter ${i === 0 ? 'selected' : ''}" data-category="${name}" aria-pressed="${i === 0}">${name === '全部' ? '全部工具' : name}</button>`).join('')}</div><span class="directory-meta">轻量 · 顺手 · 无需登录</span></div>
   <div id="tool-grid" class="tool-grid"></div></section>
-  <section class="recent-section"><div class="section-heading"><h2>最近使用</h2><span>接着上次的思路</span></div><div class="recent-list">${recent.length ? recent.map(item => { const tool = tools.find(tool => tool.id === item.id); return `<a href="${toolUrl(tool.id)}" class="recent-item">${glyph(tool)}<span>${tool.title}</span><span class="recent-time">${new Date(item.at).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })} ${new Date(item.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>${icon('arrow', 16)}</a>`; }).join('') : `<div class="recent-empty">${icon('clock', 20)}<p>还没有使用记录。打开一个工具，从这里开始。</p><a href="/tools/json/">试试 JSON 格式化 ${icon('arrow', 15)}</a></div>`}</div></section>
-  <aside class="bottom-note"><div class="bottom-note-icon">${icon('shield', 22)}</div><div><strong>你的内容，只属于你。</strong><p>格式转换在浏览器完成；邮件与网络查询通过本站 Worker 请求对应服务，结果不持久保存。</p></div><span class="note-caption">A LITTLE LESS FRICTION.</span></aside>`;
+  <section class="recent-section"><div class="section-heading"><h2>最近使用</h2><span>接着上次的思路</span></div><div class="recent-list">${recent.length ? recent.map(item => { const tool = tools.find(tool => tool.id === item.id); return `<a href="${toolUrl(tool.id)}" class="recent-item">${glyph(tool)}<span>${tool.title}</span><span class="recent-time">${new Date(item.at).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })} ${new Date(item.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>${icon('arrow', 16)}</a>`; }).join('') : `<div class="recent-empty">${icon('clock', 20)}<p>还没有使用记录。打开一个工具，从这里开始。</p><a href="${toolUrl('json')}">试试 JSON 格式化 ${icon('arrow', 15)}</a></div>`}</div></section>
+  <aside class="bottom-note"><div class="bottom-note-icon">${icon('shield', 22)}</div><div><strong>你的内容，只属于你。</strong><p>${staticOnly ? '本版本的工具全部在浏览器完成，输入内容不会上传或保存。' : '格式转换在浏览器完成；邮件与网络查询通过本站 Worker 请求对应服务，结果不持久保存。'}</p></div><span class="note-caption">A LITTLE LESS FRICTION.</span></aside>`;
 }
 function renderCards() {
   const matching = tools.filter(tool => (!favoritesOnly || favorites.includes(tool.id)) && (category === '全部' || tool.category === category) && `${tool.title} ${tool.keywords}`.toLowerCase().includes(query));
   $('#result-count').textContent = matching.length;
   $('#tool-grid').classList.toggle('filtered-grid', matching.length < 3);
-  $('#tool-grid').innerHTML = matching.length ? matching.map(tool => `<article class="tool-card ${tool.id === 'json' ? 'featured-card' : tool.id === 'outlook' ? 'mail-card' : ''}">${favoriteButton(tool, 'card-favorite')}<a class="card-link" href="${toolUrl(tool.id)}"><div class="card-top">${glyph(tool)}<span class="card-category">${tool.category}工具</span></div><div class="card-copy"><span class="card-eyebrow">${tool.en}</span><h3>${tool.title}</h3><p>${tool.description}</p>${tool.id === 'json' ? `<div class="code-preview" aria-hidden="true"><div><span class="code-line">01</span>{</div><div><span class="code-line">02</span>  <span class="code-key">"a_little_less"</span>: <span class="code-string">"mess"</span>,</div><div><span class="code-line">03</span>  <span class="code-key">"a_little_more"</span>: <span class="code-string">"clarity"</span></div><div><span class="code-line">04</span>}</div><span class="code-badge">${icon('check', 12)} VALID JSON</span></div>` : ''}</div><div class="card-bottom"><div class="tag-list">${tool.tags.map(tag => `<span>${tag}</span>`).join('')}</div><span class="card-open">打开工具 ${icon('arrow', 16)}</span></div></a></article>`).join('') : `<div class="empty-state">${icon(favoritesOnly ? 'star' : 'search', 30)}<h3>${favoritesOnly && !favorites.length ? '收藏你的第一个工具' : '没有找到匹配的工具'}</h3><p>${favoritesOnly && !favorites.length ? '点击工具右上角的星标，下次就能更快找到它。' : '试试 JSON、时间戳、Base64 或 URL。'}</p>${favoritesOnly && !favorites.length ? '<a class="button primary" href="/">浏览全部工具</a>' : '<button class="button" data-action="reset-search">清除筛选</button>'}</div>`;
+  $('#tool-grid').innerHTML = matching.length ? matching.map(tool => `<article class="tool-card ${tool.id === 'json' ? 'featured-card' : tool.id === 'outlook' ? 'mail-card' : ''}">${favoriteButton(tool, 'card-favorite')}<a class="card-link" href="${toolUrl(tool.id)}"><div class="card-top">${glyph(tool)}<span class="card-category">${tool.category}工具</span></div><div class="card-copy"><span class="card-eyebrow">${tool.en}</span><h3>${tool.title}</h3><p>${tool.description}</p>${tool.id === 'json' ? `<div class="code-preview" aria-hidden="true"><div><span class="code-line">01</span>{</div><div><span class="code-line">02</span>  <span class="code-key">"a_little_less"</span>: <span class="code-string">"mess"</span>,</div><div><span class="code-line">03</span>  <span class="code-key">"a_little_more"</span>: <span class="code-string">"clarity"</span></div><div><span class="code-line">04</span>}</div><span class="code-badge">${icon('check', 12)} VALID JSON</span></div>` : ''}</div><div class="card-bottom"><div class="tag-list">${tool.tags.map(tag => `<span>${tag}</span>`).join('')}</div><span class="card-open">打开工具 ${icon('arrow', 16)}</span></div></a></article>`).join('') : `<div class="empty-state">${icon(favoritesOnly ? 'star' : 'search', 30)}<h3>${favoritesOnly && !favorites.length ? '收藏你的第一个工具' : '没有找到匹配的工具'}</h3><p>${favoritesOnly && !favorites.length ? '点击工具右上角的星标，下次就能更快找到它。' : '试试 JSON、时间戳、Base64 或 URL。'}</p>${favoritesOnly && !favorites.length ? `<a class="button primary" href="${sitePath('')}">浏览全部工具</a>` : '<button class="button" data-action="reset-search">清除筛选</button>'}</div>`;
 }
 
 function toolPage() {
-  return `<a class="back-link" href="/">← 全部工具</a><div class="tool-page-heading"><div class="tool-heading-main">${glyph(current)}<div><span class="eyebrow">${current.en}</span><h1>${current.title}</h1></div></div>${favoriteButton(current)}</div><p class="tool-description">${current.details}</p>
+  if (unavailable) return `<a class="back-link" href="${sitePath('')}">← 全部工具</a><div class="tool-page-heading"><div class="tool-heading-main">${glyph(current)}<div><span class="eyebrow">${current.en}</span><h1>${current.title}</h1></div></div></div><aside class="pages-notice"><strong>此工具需要 Cloudflare Worker</strong><p>GitHub Pages 仅提供静态托管，无法运行此工具所需的服务端接口。你仍可使用本站的 9 个本地工具，或部署完整版本。</p><a class="button primary" href="https://github.com/JamesZhaoY/daykit/blob/main/docs/DEPLOYMENT.md">查看完整部署方式 ${icon('arrow', 16)}</a></aside>`;
+  return `<a class="back-link" href="${sitePath('')}">← 全部工具</a><div class="tool-page-heading"><div class="tool-heading-main">${glyph(current)}<div><span class="eyebrow">${current.en}</span><h1>${current.title}</h1></div></div>${favoriteButton(current)}</div><p class="tool-description">${current.details}</p>
   ${['jwt', 'config', 'cron', 'curl'].includes(page) ? `<div id="${page}-tool"><p class="tool-description">正在加载工具…</p></div>` : page === 'outlook' ? '<div id="mail-reader"><p class="tool-description">正在加载邮件读取工具…</p></div>' : ['ip', 'domain'].includes(page) ? '<div id="network-tool"><p class="tool-description">正在加载网络工具…</p></div>' : page === 'diff' ? '<div id="diff-tool"><p class="tool-description">正在加载 Diff 工具…</p></div>' : page === 'regex' ? '<div id="regex-tool"><p class="tool-description">正在加载正则工具…</p></div>' : page === 'timestamp' ? timestampPage() : editorPage()}
   <aside class="usage-note">${icon('shield', 17)}<p>${page === 'jwt' ? '解码不等于验签；时间状态基于设备时钟和令牌中的未验证声明。令牌内容不上传或保存。' : page === 'config' ? '格式转换在浏览器中完成。注释不跨格式保留；无法准确表达的类型会提示错误，请核对输出。' : page === 'cron' ? 'Cloudflare 定时任务使用 UTC。请确认选中的 Cron 方言和时区，预览不会创建实际定时任务。' : page === 'curl' ? 'cURL 仅在本地解析为请求与代码，不执行命令、不自动发送请求。请检查转换提示和生成结果。' : page === 'diff' ? '两段文本仅在浏览器中比较，不上传或保存；最多每侧 2,000 行、1 MB，支持忽略首尾及重复空白。' : page === 'regex' ? '使用当前浏览器的 JavaScript 正则语法；后台线程执行，复杂匹配超时会自动停止，输入内容不上传或保存。' : page === 'ip' ? '当前 IP 来自访问本站时的连接信息；指定 IP 查询使用外部公开数据源，地理位置为近似值。' : page === 'domain' ? '查询通过公共 DNS 解析器完成；CDN 或代理地址并不代表源站，结果会标明识别依据与不确定性。' : page === 'outlook' ? '账号与授权令牌经本站 Worker 发送至 Microsoft；密码字段不发送。页面刷新或关闭后，输入和邮件结果不会保留。' : page === 'json' ? '使用标准 JSON 格式：属性名使用双引号，不支持注释或末尾逗号。单次支持 2 MB 内容。' : page === 'encode' ? 'Base64 使用 UTF-8 编码；URL 编码针对单个参数值（encodeURIComponent），解码时保留 + 号。单次支持 2 MB。' : 'Unix 时间戳从 1970-01-01 00:00:00 UTC 起计时。自动识别时，绝对值 11 位及以上按毫秒处理；历史或远期日期请手动选择单位。'}</p></aside>`;
 }
@@ -284,6 +292,8 @@ document.addEventListener('keydown', event => {
 if (page === 'home') {
   renderCards();
   $('#tool-search').addEventListener('input', event => { query = event.target.value.trim().toLowerCase(); renderCards(); });
+} else if (unavailable) {
+  // The static build renders an explanation without collecting credentials or calling APIs.
 } else if (page === 'timestamp') {
   function tick() {
     const now = new Date();

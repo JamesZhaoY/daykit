@@ -2,6 +2,8 @@
 
 [返回项目首页](../README.md) · [部署与费用指南](DEPLOYMENT.md)
 
+以下为 Workers 完整版的 12 个工具。GitHub Pages 静态版提供其中 9 个本地工具；Outlook 邮件、IP 与域名查询需要 Worker API，在 Pages 中只显示部署说明。Pages 项目地址会在下列路径前加上 `/<仓库名>/`。
+
 ## 工具
 
 - `/tools/json/`：格式化、压缩、校验、文件导入、复制和下载。支持 2/4 空格和 Tab 缩进。
@@ -80,9 +82,12 @@ JSON 使用浏览器原生解析器，数字遵循 JavaScript 双精度规则。
 npm test
 npm run test:python  # 可选，需要 Python 3
 npm run check:deploy
+npm run test:pages
 ```
 
 核心测试覆盖 JSON 错误与精度保护、UTF-8 编码往返、大文本、无效编码、时间戳单位、负数、无效日期和时区转换。`check:deploy` 还会构建生产资源并运行 Wrangler dry-run，不会上传文件。
+
+`test:pages` 会构建 `/daykit/` 子路径的 `dist-pages/`，验证 HTML 资源引用、内容安全策略和带指纹的浏览器线程地址；不会覆盖 Workers 的 `dist/`。
 
 启动 `npm run dev` 后，在另一终端执行 `npm run test:workers`。它验证独立页面、缓存头、ETag/304、资源 MIME、重定向参数保留、真实 404 及配置文件不对外暴露。可用 `DAYKIT_TEST_URL` 指定已部署网址进行只读 HTTP 校验。
 
@@ -103,3 +108,12 @@ playwright-cli -s=daykit-workers run-code --filename=tests/curl-browser.js
 ```
 
 浏览器脚本使用当前打开站点，检查搜索、收藏、各工具的输入输出、移动导航与不同屏幕宽度，并将截图保存到 `artifacts/`。它使用独立测试浏览器，会修改该浏览器中的收藏和最近使用记录。
+
+GitHub Pages 可使用已部署网址，或[本地静态预览](DEPLOYMENT.md#手动构建与本地预览)，运行专用检查：
+
+```sh
+playwright-cli -s=daykit-pages open https://jameszhaoy.github.io/daykit/
+playwright-cli -s=daykit-pages run-code --filename=tests/pages-browser.js
+```
+
+脚本从当前页面的首页链接读取实际路径，验证 9 个工具、正则 / Cron 浏览器线程、深层链接、收藏、移动导航和 API 工具不可用提示，同时检查没有资源错误或 API 请求。

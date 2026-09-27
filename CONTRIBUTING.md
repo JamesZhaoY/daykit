@@ -21,6 +21,8 @@ npm run check:deploy
 
 保持开发服务运行，在另一个终端执行 `npm run test:workers`。修改 cURL 代码生成逻辑时，还需安装 Python 3 并运行 `npm run test:python`。
 
+修改构建、导航或工具注册时，运行 `npm run test:pages`，验证 GitHub Pages 子路径和资源引用；需要浏览器回归时使用 `tests/pages-browser.js`，见下方开发说明。
+
 浏览器操作测试位于 `tests/*-browser.js`，运行方法见 [功能与开发说明](docs/TOOLS.md)。涉及页面变动时，请检查桌面和手机布局。
 
 ## 新增工具
@@ -30,6 +32,8 @@ npm run check:deploy
 3. 将独立 CSS 加入 `scripts/build.mjs` 的入口列表。
 4. 为解析、转换或复杂分支添加有价值的测试，并登记在 `package.json`。
 5. 更新 README 功能清单、`tests/workers.test.mjs` 路由表及首页工具数量检查。
+
+需要服务端 API 的工具还应加入 `public/app.js` 的 `onlineToolIds`，使 Pages 版隐藏入口并显示不可用说明；本地工具须兼容仓库子路径，使用现有 URL 构建方式。
 
 输入应保持为数据：不执行用户命令、不把外部 HTML 直接插入应用 DOM；复杂正则或计划计算应在线程中运行并设置超时。第三方网络查询只连接明确的数据服务。
 
