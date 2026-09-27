@@ -1,5 +1,5 @@
 async page => {
-  await page.locator('.brand').first().waitFor();
+  await page.locator('.brand').first().waitFor({ state: 'attached' });
   const base = await page.locator('.brand').first().getAttribute('href');
   const origin = await page.evaluate(() => location.origin);
   const site = origin + base;
